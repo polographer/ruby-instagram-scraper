@@ -1,5 +1,7 @@
 А simple module for requests to Instagram without an API key.
 
+This is a simple fork that tries to fix the missing or changed json objects
+
 ### Installation
 
 ```sh
