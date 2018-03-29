@@ -5,13 +5,20 @@ describe RubyInstagramScraper do
 
   describe "when search" do
     it "users must be an array" do
-      RubyInstagramScraper.search( "borodanov" )["users"].must_be_instance_of Array
+      RubyInstagramScraper.search( "polographer" )["users"].must_be_instance_of Array
     end
   end
 
-  describe "when request user media nodes" do
-    it "must be an array" do
-      RubyInstagramScraper.get_user_media_nodes( "borodanov" ).must_be_instance_of Array
+  describe "when request user media nodes by name" do
+    it "must raise an exeption" do
+      assert_raises Exception do
+        RubyInstagramScraper.get_user_media_nodes( "polographer" )
+      end
+    end
+  end
+  describe "when request user media nodes by id" do
+    it "users must be an array" do
+      RubyInstagramScraper.get_user_media_by_id( "366457904" ).must_be_instance_of Array
     end
   end
 
@@ -23,7 +30,7 @@ describe RubyInstagramScraper do
 
   describe "when request a media" do
     it "must has equal code in field" do
-      RubyInstagramScraper.get_media( "vKQeMNu7H1" )["code"].must_equal "vKQeMNu7H1"
+      RubyInstagramScraper.get_media( "vKQeMNu7H1" )["shortcode"].must_equal "vKQeMNu7H1"
     end
   end
 

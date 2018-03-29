@@ -1,17 +1,13 @@
-А simple module for requests to Instagram without an API key.
+Lets be straight, if you reach this you know that the official api endpoint license is so restrictive that you cannot work with that, this gem don't try to "impersonate" an android client, but instead it consumes an unnoficial endpoint used for the web page, it will change (it has changed before) I will try to keep up with the changes as time permits.
 
-This is a simple fork that tries to fix the missing or changed json objects
+It's based on the original work of Sergey Borodanov, https://github.com/sborod/ruby-instagram-scraper
 
 ### Installation
 
-```sh
-$ gem install ruby-instagram-scraper
-```
-
-Or with Bundler in your Gemfile.
+I haven't publish the gem, so right now is github only
 
 ```ruby
-gem 'ruby-instagram-scraper'
+gem 'ruby-instagram-scraper-ng', github: 'polographer/ruby-instagram-scraper'
 ```
 
 ### Methods
@@ -23,10 +19,10 @@ After installation you can do following requests to Instagram:
 RubyInstagramScraper.search( "gopro" )
 
 # Get user media nodes:
-RubyInstagramScraper.get_user_media_nodes( "gopro" )
+RubyInstagramScraper.get_user( "gopro" )
 
-# Pass an "id" of node to offset:
-RubyInstagramScraper.get_user_media_nodes( "gopro", "1259825963188747360" )
+# Get user media by id
+RubyInstagramScraper.get_user_media_by_id("366457904")
 
 # Get media nodes by tag:
 nodes = RubyInstagramScraper.get_tag_media_nodes( "gopro" )
@@ -37,4 +33,5 @@ RubyInstagramScraper.get_tag_media_nodes( "gopro", nodes.last["id"] )
 # Get media info:
 RubyInstagramScraper.get_media( nodes.first["code"] )
 RubyInstagramScraper.get_media( "BGGnlHDBV3N" )
+
 ```
