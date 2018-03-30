@@ -15,10 +15,12 @@ gem 'ruby-instagram-scraper-ng', github: 'polographer/ruby-instagram-scraper'
 There is a new set of methods that try to maintain a common response structure. They are called normalized methods, they return a object RubyInstagramResponse that contains the relevant information
 
 ```ruby
-# Search by tag or username , returns an object containing , media , page and raw, you can also send the nnumber of records as well as end_cursor
+# Search by tag or username , returns an object containing , media , page and raw
+# you can also send the nnumber of records as well as end_cursor
 RubyInstagramScraper.normalized_user_media_by_uid( "366457904")
 
-# Get user media nodes returns an object containing , media , likes, comments and raw, you can also send the nnumber of records as well as end_cursor
+# Get user media nodes returns an object containing , media , likes, comments and raw
+# you can also send the nnumber of records as well as end_cursor
 RubyInstagramScraper.normalized_media_by_code( "BVNMDtOAu9l")
 
 ```
