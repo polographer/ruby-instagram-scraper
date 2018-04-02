@@ -54,19 +54,22 @@ describe RubyInstagramScraper do
 
   describe "when request user media nodes by id with count" do
     it "should match counts" do
-      RubyInstagramScraper.normalized_user_media_by_uid( "366457904", 3 ).media.size.must_equal 3
+      RubyInstagramScraper.normalized_user_media_by_uid( "366457904", 15 ).media.size.must_equal 15
     end
   end
+
+  # deleted user 5768
 
   #I know its a generally a bad practice to test multiple things on one test
   #------------------ BUT --------------------- its an api call to instagram and we don't want to get banned  
   describe "when request normalized user media nodes by uid with count" do
-    it "should have title virtual fields" do
+    it "should have virtual fields" do
       result = RubyInstagramScraper.normalized_user_media_by_uid( "366457904", 1)
       result.media[0]["title"].wont_be_nil
       result.media[0]["likes_count"].wont_be_nil
       result.media[0]["comments_count"].wont_be_nil
-      result.media[0]["thumbnail_src"].wont_be_nil
+      result.media[0]["thumbnail_src"].wont_be_nil 
+      result.media[0]["owner_id"].must_equal "366457904"
     end
   end
 
@@ -80,25 +83,52 @@ describe RubyInstagramScraper do
       result.media[0]["id"].wont_be_nil
       result.media[0]["taken_at_timestamp"].wont_be_nil
       result.media[0]["display_url"].wont_be_nil
+      result.media[0]["shortcode"].wont_be_nil
+      result.media[0]['edge_media_to_comment']['count'].wont_be_nil  
+      result.media[0]['edge_media_to_caption']["edges"].wont_be_nil
     end
   end
 
   describe "when request normalized user media nodes by uid with count" do
     it "response must be an value object RubyInstagramResponse" do
-      RubyInstagramScraper.normalized_media_by_code( "BVNMDtOAu9l", 3).must_be_instance_of RubyInstagramResponse
+      RubyInstagramScraper.normalized_media_by_code("BVNMDtOAu9l").must_be_instance_of RubyInstagramResponse
     end
   end
   #I know its a generally a bad practice to test multiple things on one test
   #------------------ BUT --------------------- its an api call to instagram and we don't want to get banned  
 
   describe "when request normalized  media by code with count" do
-    it "should have likes count virtual field" do
-      result = RubyInstagramScraper.normalized_media_by_code( "BVNMDtOAu9l", 3)
+    it "should have virtual fields" do
+      result = RubyInstagramScraper.normalized_media_by_code("BVNMDtOAu9l")
       result.media["likes_count"].wont_be_nil
       result.media["comments_count"].wont_be_nil
     end
   end
 
+  describe "when request normalized user by name" do
+    it "should be an instance of ruby instagram response" do
+      result = RubyInstagramScraper.normalized_user_media_by_name("polographer").must_be_instance_of RubyInstagramResponse
+    end
+  end
 
+  describe "when request normalized user by name" do
+    it "should have the virtual fields" do
+      result = RubyInstagramScraper.normalized_user_media_by_name("polographer")
+      result.media[0]["title"].wont_be_nil
+      result.media[0]["likes_count"].wont_be_nil
+      result.media[0]["comments_count"].wont_be_nil
+      result.media[0]["thumbnail_src"].wont_be_nil 
+      result.media[0]["owner_id"].must_equal "366457904"
+    end
+  end
 
+  describe "when request normalized user by name" do
+    it "should have the basic requiered fields" do
+      result = RubyInstagramScraper.normalized_user_media_by_name("polographer")
+      result.userdata["id"].must_equal "366457904"
+      result.userdata["full_name"].wont_be_nil
+      result.userdata["username"].wont_be_nil
+      result.userdata["profile_pic_url"].wont_be_nil
+    end
+  end
 end

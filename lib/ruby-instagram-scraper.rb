@@ -22,13 +22,13 @@ module RubyInstagramScraper
     raise Exception.new("Endpoint /media is no longer working, you can get similar data with `get_user_media_by_id`, don't use this function anymore")
   end
 
-  def self.get_user ( username, max_id = nil )
-    warn "[DEPRECATION] `get_user` ?__a=1 endpoint looks like it's going to be deprecated.  Please use `get_user_media_by_id` instead you need for pagination anyway."
-    url = "#{BASE_URL}/#{ username }/?__a=1"
-    params = ""
-    params = "&max_id=#{ max_id }" if max_id
+  def self.get_user ( username )
+    self._get_media_user_by_name_proxy(username)["graphql"]["user"]
+    #url = "#{BASE_URL}/#{ username }/?__a=1"
+    #params = ""
+    #params = "&max_id=#{ max_id }" if max_id
 
-    JSON.parse( open( "#{url}#{params}" ).read )["graphql"]["user"]
+    #JSON.parse( open( "#{url}#{params}" ).read )["graphql"]["user"]
   end
 
   def self.get_tag_media_nodes ( tag, max_id = nil )
@@ -57,18 +57,35 @@ module RubyInstagramScraper
   # this will provide a normalized "as much as possible" (simple hashes) output
   #
 
+  def self.normalized_user_media_by_name(name)
+    data = self._get_media_user_by_name_proxy(name)
+    #pp data
+    result = RubyInstagramResponse.new(
+      :userdata => data["graphql"]["user"], 
+      :media => self.flatten_media_edge_array(data["graphql"]["user"]["edge_owner_to_timeline_media"]["edges"]), 
+      :page => data["graphql"]["user"]["edge_owner_to_timeline_media"]["page_info"],
+      :raw => data )
+  end
+
   def self.normalized_user_media_by_uid(id, count=DEFAULT_COUNT, end_cursor=nil)
     data = self._get_media_user_by_id_proxy(id, count, end_cursor)
     #data["data"]["user"]["edge_owner_to_timeline_media"]["edges"]
-    result = RubyInstagramResponse.new(
-      :media => self.flatten_media_edge_array(data["data"]["user"]["edge_owner_to_timeline_media"]["edges"]), 
-      :page => data["data"]["user"]["edge_owner_to_timeline_media"]["page_info"], 
-      :raw => data )
+    # puts "------------------- data --------------"
+    # pp data
+    # puts "---------------------------------------"
+    if data["data"]["user"]
+      result = RubyInstagramResponse.new(
+        :media => self.flatten_media_edge_array(data["data"]["user"]["edge_owner_to_timeline_media"]["edges"]), 
+        :page => data["data"]["user"]["edge_owner_to_timeline_media"]["page_info"], 
+        :raw => data )
+    else
+      result = RubyInstagramResponse.new(:deleted => true)
+    end
     #pp result
     result
   end
 
-  def self.normalized_media_by_code(code, count=DEFAULT_COUNT, end_cursor=nil)
+  def self.normalized_media_by_code(code)
     url = "#{BASE_URL}/p/#{ code }/?__a=1"
     params = ""
     data = JSON.parse( open( "#{url}#{params}" ).read )
@@ -85,7 +102,7 @@ module RubyInstagramScraper
   #proxy calls
   
   def self._get_media_user_by_id_proxy(id, count, end_cursor)
-    self._march_2018_get_user(id, count, end_cursor)
+    self._march_2018_get_user_by_id(id, count, end_cursor)
   end
 
   def self._get_media_comments_proxy(id, count, end_cursor)
@@ -94,6 +111,10 @@ module RubyInstagramScraper
   #_march_2018_get_tag_media
   def self._get_tag_media_proxy(id, count, end_cursor)
     self._march_2018_get_tag_media(id, count, end_cursor)
+  end
+
+  def self._get_media_user_by_name_proxy(name)
+    self._march_2018_get_user_by_name(name)
   end
   #
   # Utilities
@@ -123,6 +144,9 @@ module RubyInstagramScraper
     if item['edge_media_to_comment']
       item['comments_count'] = item['edge_media_to_comment']['count']
     end
+    if item["owner"]["id"]
+      item["owner_id"] = item["owner"]["id"]
+    end
     item
   end
 
@@ -131,7 +155,13 @@ module RubyInstagramScraper
   # https://stackoverflow.com/questions/49265339/instagram-a-1-url-doesnt-allow-max-id
   #
 
-  def self._march_2018_get_user(id, count=DEFAULT_COUNT, end_cursor=nil)
+  def self._march_2018_get_user_by_name(name)
+    url = "#{BASE_URL}/#{ name }/?__a=1"
+    params = ""
+    JSON.parse( open( "#{url}#{params}" ).read )
+  end
+
+  def self._march_2018_get_user_by_id(id, count=DEFAULT_COUNT, end_cursor=nil)
     #https://www.instagram.com/graphql/query/?query_hash=472f257a40c653c64c666ce877d59d2b&variables={"id":"93024","first":12,"after":"XXXXXXXX"}
     url = "#{BASE_URL}/graphql/query/?query_hash=472f257a40c653c64c666ce877d59d2b&variables="
     params = {'id'=> id, 'first' => count, 'after'=> end_cursor }

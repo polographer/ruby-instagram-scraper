@@ -16,11 +16,11 @@ There is a new set of methods that try to maintain a common response structure. 
 
 ```ruby
 # Search by tag or username , returns an object containing , media , page and raw
-# you can also send the nnumber of records as well as end_cursor
+# you can also send the number of records as well as end_cursor
 RubyInstagramScraper.normalized_user_media_by_uid( "366457904")
 
 # Get user media nodes returns an object containing , media , likes, comments and raw
-# you can also send the nnumber of records as well as end_cursor
+# you can also send the number of records as well as end_cursor
 RubyInstagramScraper.normalized_media_by_code( "BVNMDtOAu9l")
 
 ```

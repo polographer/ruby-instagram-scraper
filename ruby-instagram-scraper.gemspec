@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.description = "A simple module for requests to Instagram reaching unnoficial api endpoints."
   s.authors     = [ "Sergey Borodanov <s.borodanov@gmail.com>", "Polo Ornelas" ]
   s.email       = "me@poloornelas.mx"
-  s.files       = [ "lib/ruby-instagram-scraper.rb" ]
+  s.files       = [ "lib/ruby-instagram-scraper.rb", "lib/ruby-instagram-response.rb" ]
   s.test_files  = [ "test/ruby_instagram_scraper_test.rb" ]
   s.homepage    = 'https://github.com/polographer/ruby-instagram-scraper'
   s.license     = 'MIT'
