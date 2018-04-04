@@ -99,9 +99,21 @@ describe RubyInstagramScraper do
 
   describe "when request normalized  media by code with count" do
     it "should have virtual fields" do
-      result = RubyInstagramScraper.normalized_media_by_code("BVNMDtOAu9l")
+      result = RubyInstagramScraper.normalized_media_by_code("BhG_n9jHS3F")
       result.media["likes_count"].wont_be_nil
       result.media["comments_count"].wont_be_nil
+    end
+  end
+
+  describe "when request normalized  media by code with count" do
+    it "should have required fields" do
+      result = RubyInstagramScraper.normalized_media_by_code("BhG_n9jHS3F")
+      result.media["is_ad"].must_equal false
+      result.media["shortcode"].must_equal "BhG_n9jHS3F"
+      result.media["location"]['id'].must_equal "213690172"
+      result.media["location"]['name'].must_equal "Reston, Virginia"
+      result.media["dimensions"]['height'].must_equal 1350
+      result.media["dimensions"]['width'].must_equal 1080
     end
   end
 

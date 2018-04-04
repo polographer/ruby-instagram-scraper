@@ -122,8 +122,8 @@ module RubyInstagramScraper
 
   def self.add_virtual_fields_for_media_details(data)
     result = data["graphql"]["shortcode_media"]
-    result['likes_count'] = data["graphql"]["shortcode_media"]['edge_media_preview_like']['count']
-    result['comments_count'] = data["graphql"]["shortcode_media"]['edge_media_to_comment']['count']
+    result['likes_count'] = result['edge_media_preview_like']['count']
+    result['comments_count'] = result['edge_media_to_comment']['count']
     result
   end
 
