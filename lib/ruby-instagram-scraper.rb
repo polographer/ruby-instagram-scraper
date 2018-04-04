@@ -7,6 +7,8 @@ module RubyInstagramScraper
 
   BASE_URL = "https://www.instagram.com"
   DEFAULT_COUNT = 10
+  USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.854.0 Safari/535.2"
+
   #
   # Legacy methods
   #
@@ -14,7 +16,7 @@ module RubyInstagramScraper
   def self.search ( query )
     url = "#{BASE_URL}/web/search/topsearch/"
     params = "?query=#{ query }"
-    JSON.parse( open( "#{url}#{params}" ).read )
+    JSON.parse( open( "#{url}#{params}" , 'User-Agent' => USER_AGENT ).read )
   end
 
   #doesn't work anymore
@@ -39,7 +41,7 @@ module RubyInstagramScraper
   def self.get_media ( code )
     url = "#{BASE_URL}/p/#{ code }/?__a=1"
     params = ""
-    JSON.parse( open( "#{url}#{params}" ).read )["graphql"]["shortcode_media"]
+    JSON.parse( open( "#{url}#{params}", 'User-Agent' => USER_AGENT ).read )["graphql"]["shortcode_media"]
   end
 
   def self.get_media_comments ( shortcode, count = DEFAULT_COUNT, before = nil )
@@ -158,28 +160,28 @@ module RubyInstagramScraper
   def self._march_2018_get_user_by_name(name)
     url = "#{BASE_URL}/#{ name }/?__a=1"
     params = ""
-    JSON.parse( open( "#{url}#{params}" ).read )
+    JSON.parse( open( "#{url}#{params}", 'User-Agent' => USER_AGENT ).read )
   end
 
   def self._march_2018_get_user_by_id(id, count=DEFAULT_COUNT, end_cursor=nil)
     #https://www.instagram.com/graphql/query/?query_hash=472f257a40c653c64c666ce877d59d2b&variables={"id":"93024","first":12,"after":"XXXXXXXX"}
     url = "#{BASE_URL}/graphql/query/?query_hash=472f257a40c653c64c666ce877d59d2b&variables="
     params = {'id'=> id, 'first' => count, 'after'=> end_cursor }
-    JSON.parse( open( "#{url}#{params.to_json}" ).read )
+    JSON.parse( open( "#{url}#{params.to_json}", 'User-Agent' => USER_AGENT ).read )
   end
 
   def self._march_2018_get_tag_media(tag, count=DEFAULT_COUNT, end_cursor=nil)
     #https://www.instagram.com/graphql/query/?query_hash=298b92c8d7cad703f7565aa892ede943&variables={"tag_name":"iphone","first":12,"after":"XXXXXXXX"}
     url = "#{BASE_URL}/graphql/query/?query_hash=298b92c8d7cad703f7565aa892ede943&variables="
     params = {'tag_name'=> tag, 'first' => count, 'after'=> end_cursor }
-    JSON.parse( open( "#{url}#{params.to_json}" ).read )
+    JSON.parse( open( "#{url}#{params.to_json}", 'User-Agent' => USER_AGENT ).read )
   end
 
   def self._march_2018_get_media_comments(shortcode, count=DEFAULT_COUNT, end_cursor=nil)
     #https://www.instagram.com/graphql/query/?query_hash=33ba35852cb50da46f5b5e889df7d159&variables={"shortcode":"Bf-I2P6grhd","first":20,"after":"XXXXXXXX"}
     url = "#{BASE_URL}/graphql/query/?query_hash=33ba35852cb50da46f5b5e889df7d159&variables="
     params = {'shortcode'=> shortcode, 'first' => count, 'after'=> end_cursor }
-    JSON.parse( open( "#{url}#{params.to_json}" ).read )
+    JSON.parse( open( "#{url}#{params.to_json}", 'User-Agent' => USER_AGENT ).read )
   end
 
 
