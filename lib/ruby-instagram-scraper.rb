@@ -126,6 +126,7 @@ module RubyInstagramScraper
     result = data["graphql"]["shortcode_media"]
     result['likes_count'] = result['edge_media_preview_like']['count']
     result['comments_count'] = result['edge_media_to_comment']['count']
+    result["owner_id"] = result["owner"]["id"]
     result
   end
 

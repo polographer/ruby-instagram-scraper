@@ -102,6 +102,7 @@ describe RubyInstagramScraper do
       result = RubyInstagramScraper.normalized_media_by_code("BhG_n9jHS3F")
       result.media["likes_count"].wont_be_nil
       result.media["comments_count"].wont_be_nil
+      result.media["owner_id"].must_equal "366457904"
     end
   end
 
