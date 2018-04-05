@@ -92,7 +92,7 @@ module RubyInstagramScraper
     params = ""
     data = JSON.parse( open( "#{url}#{params}" ).read )
     result = RubyInstagramResponse.new(
-      :media => self.add_virtual_fields_for_media_details(data),
+      :media => self.add_virtual_fields(data["graphql"]["shortcode_media"]),
       :likes => data["graphql"]["shortcode_media"]["edge_media_preview_like"]["edges"].map{|n| n["node"]},
       :comments => data["graphql"]["shortcode_media"]["edge_media_to_comment"]["edges"].map{|n| n["node"]},
       :raw => data)
@@ -122,21 +122,30 @@ module RubyInstagramScraper
   # Utilities
   #
 
-  def self.add_virtual_fields_for_media_details(data)
-    result = data["graphql"]["shortcode_media"]
-    result['likes_count'] = result['edge_media_preview_like']['count']
-    result['comments_count'] = result['edge_media_to_comment']['count']
-    result["owner_id"] = result["owner"]["id"]
-    result
-  end
+  # def self.add_virtual_fields_for_media_details(data)
+  #   result = data["graphql"]["shortcode_media"]
+  #   result['likes_count'] = result['edge_media_preview_like']['count']
+  #   result['comments_count'] = result['edge_media_to_comment']['count']
+  #   result["owner_id"] = result["owner"]["id"]
+  #   result
+  # end
 
   def self.flatten_media_edge_array(data)
     data.map {|n| self.add_virtual_fields(n["node"]) }
   end
 
+  def self.tags_from_string (title)
+    tags = title.scan(/(?:^|\s)#(\w+)/i)
+    if not tags.nil?
+      tags = tags.join(" ")
+    end
+    tags
+  end
+
   def self.add_virtual_fields(item)
     if item['edge_media_to_caption'] and item['edge_media_to_caption']["edges"] and item['edge_media_to_caption']["edges"].length > 0 
       item["title"] = item['edge_media_to_caption']["edges"][0]["node"]["text"]
+      item['tags'] = tags_from_string(item['title'])
     end
     if not item['thumbnail_src'] and item['display_resources']
       item['thumbnail_src'] = item['display_resources'][0]["src"]
@@ -147,7 +156,7 @@ module RubyInstagramScraper
     if item['edge_media_to_comment']
       item['comments_count'] = item['edge_media_to_comment']['count']
     end
-    if item["owner"]["id"]
+    if item["owner"] && item["owner"]["id"]
       item["owner_id"] = item["owner"]["id"]
     end
     item

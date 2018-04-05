@@ -103,6 +103,7 @@ describe RubyInstagramScraper do
       result.media["likes_count"].wont_be_nil
       result.media["comments_count"].wont_be_nil
       result.media["owner_id"].must_equal "366457904"
+      result.media["tags"].must_equal "latergram filmborn panf"
     end
   end
 
