@@ -58,7 +58,12 @@ describe RubyInstagramScraper do
     end
   end
 
-  # deleted user 5768
+  describe "when request a known deleted user media nodes by uid with count" do
+    it "deleted must be true" do
+      result = RubyInstagramScraper.normalized_user_media_by_uid( "5847665302", 1)
+      result.deleted.must_equal true
+    end
+  end
 
   #I know its a generally a bad practice to test multiple things on one test
   #------------------ BUT --------------------- its an api call to instagram and we don't want to get banned  
@@ -118,6 +123,8 @@ describe RubyInstagramScraper do
       result.media["dimensions"]['width'].must_equal 1080
     end
   end
+
+  # deleted media : BTkyVWdgSwl
 
   describe "when request normalized user by name" do
     it "should be an instance of ruby instagram response" do
