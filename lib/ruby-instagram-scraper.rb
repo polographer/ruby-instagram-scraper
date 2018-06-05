@@ -2,6 +2,7 @@ require 'open-uri'
 require 'json'
 require 'ruby-instagram-response'
 require 'pp'
+require 'nokogiri'
 
 module RubyInstagramScraper
 
@@ -171,6 +172,16 @@ module RubyInstagramScraper
     url = "#{BASE_URL}/#{ name }/?__a=1"
     params = ""
     JSON.parse( open( "#{url}#{params}", 'User-Agent' => USER_AGENT ).read )
+  end
+
+  def self._jun_2018_get_user_by_name(name)
+    url = "#{BASE_URL}/#{ name }/"
+    params = ""
+
+    #JSON.parse( open( "#{url}#{params}", 'User-Agent' => USER_AGENT ).read )    
+    doc = Nokogiri::HTML(open( "#{url}#{params}", 'User-Agent' => USER_AGENT ) )
+    
+
   end
 
   def self._march_2018_get_user_by_id(id, count=DEFAULT_COUNT, end_cursor=nil)

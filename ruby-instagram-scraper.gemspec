@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   s.test_files  = [ "test/ruby_instagram_scraper_test.rb" ]
   s.homepage    = 'https://github.com/polographer/ruby-instagram-scraper'
   s.license     = 'MIT'
+  s.add_dependency  "nokogiri" , "~> 1.8.2"
   s.add_development_dependency "bundler", "~> 1.16"
   s.add_development_dependency "rake", "~> 10.0"
   s.add_development_dependency "minitest", "~> 5.0"
