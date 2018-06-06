@@ -35,6 +35,8 @@ module RubyInstagramScraper
   end
 
   def self.get_tag_media_nodes ( tag, max_id = nil )
+    raise Exception.new("Endpoint /media is no longer working, don't use this function anymore")
+
     result = self._get_tag_media_proxy(tag, DEFAULT_COUNT, max_id)
     { nodes: result["data"]["hashtag"]["edge_hashtag_to_media"]["edges"], page: result["data"]["hashtag"]["edge_hashtag_to_media"]["page_info"] }
   end
@@ -46,11 +48,14 @@ module RubyInstagramScraper
   end
 
   def self.get_media_comments ( shortcode, count = DEFAULT_COUNT, before = nil )
+    raise Exception.new("Endpoint /media is no longer working, don't use this function anymore")
     result = self._get_media_comments_proxy(shortcode, count, before)
     result["data"]["shortcode_media"]["edge_media_to_comment"]["edges"].map {|n| n["node"]}
   end
 
   def self.get_user_media_by_id(id, count=DEFAULT_COUNT, end_cursor=nil)
+    raise Exception.new("Endpoint /media is no longer working, don't use this function anymore")
+
     data = self._get_media_user_by_id_proxy(id,count, end_cursor)
     data["data"]["user"]["edge_owner_to_timeline_media"]["edges"].map {|n| n["node"]}
   end
@@ -61,8 +66,9 @@ module RubyInstagramScraper
   #
 
   def self.normalized_user_media_by_name(name)
-    data = self._get_media_user_by_name_proxy(name)
-    #pp data
+    raw = self._get_media_user_by_name_proxy(name)
+    #pp raw
+    data = raw["entry_data"]["ProfilePage"][0]
     result = RubyInstagramResponse.new(
       :userdata => data["graphql"]["user"], 
       :media => self.flatten_media_edge_array(data["graphql"]["user"]["edge_owner_to_timeline_media"]["edges"]), 
@@ -71,6 +77,8 @@ module RubyInstagramScraper
   end
 
   def self.normalized_user_media_by_uid(id, count=DEFAULT_COUNT, end_cursor=nil)
+    raise Exception.new("Endpoint /media is no longer working, don't use this function anymore")
+
     data = self._get_media_user_by_id_proxy(id, count, end_cursor)
     #data["data"]["user"]["edge_owner_to_timeline_media"]["edges"]
     # puts "------------------- data --------------"
@@ -117,7 +125,8 @@ module RubyInstagramScraper
   end
 
   def self._get_media_user_by_name_proxy(name)
-    self._march_2018_get_user_by_name(name)
+    #self._march_2018_get_user_by_name(name)
+    self._jun_2018_get_user_by_name(name)
   end
   #
   # Utilities
@@ -177,11 +186,17 @@ module RubyInstagramScraper
   def self._jun_2018_get_user_by_name(name)
     url = "#{BASE_URL}/#{ name }/"
     params = ""
-
-    #JSON.parse( open( "#{url}#{params}", 'User-Agent' => USER_AGENT ).read )    
     doc = Nokogiri::HTML(open( "#{url}#{params}", 'User-Agent' => USER_AGENT ) )
-    
 
+    scripts = doc.search("script")
+    found = ""
+    scripts.each do |script_tag|
+      tag_text = script_tag.text
+      if tag_text.include? "_sharedData" and tag_text.include? "locale"
+        found = tag_text[ tag_text.index("{"), (tag_text.rindex("}") - tag_text.index("{") + 1)  ]
+      end
+    end
+    JSON.parse (found)
   end
 
   def self._march_2018_get_user_by_id(id, count=DEFAULT_COUNT, end_cursor=nil)
