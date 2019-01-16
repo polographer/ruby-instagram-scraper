@@ -27,18 +27,10 @@ module RubyInstagramScraper
 
   def self.get_user ( username )
     self._get_media_user_by_name_proxy(username)["graphql"]["user"]
-    #url = "#{BASE_URL}/#{ username }/?__a=1"
-    #params = ""
-    #params = "&max_id=#{ max_id }" if max_id
-
-    #JSON.parse( open( "#{url}#{params}" ).read )["graphql"]["user"]
   end
 
   def self.get_tag_media_nodes ( tag, max_id = nil )
     raise Exception.new("Endpoint /media is no longer working, don't use this function anymore")
-
-    result = self._get_tag_media_proxy(tag, DEFAULT_COUNT, max_id)
-    { nodes: result["data"]["hashtag"]["edge_hashtag_to_media"]["edges"], page: result["data"]["hashtag"]["edge_hashtag_to_media"]["page_info"] }
   end
 
   def self.get_media ( code )
@@ -49,15 +41,10 @@ module RubyInstagramScraper
 
   def self.get_media_comments ( shortcode, count = DEFAULT_COUNT, before = nil )
     raise Exception.new("Endpoint /media is no longer working, don't use this function anymore")
-    result = self._get_media_comments_proxy(shortcode, count, before)
-    result["data"]["shortcode_media"]["edge_media_to_comment"]["edges"].map {|n| n["node"]}
   end
 
   def self.get_user_media_by_id(id, count=DEFAULT_COUNT, end_cursor=nil)
     raise Exception.new("Endpoint /media is no longer working, don't use this function anymore")
-
-    data = self._get_media_user_by_id_proxy(id,count, end_cursor)
-    data["data"]["user"]["edge_owner_to_timeline_media"]["edges"].map {|n| n["node"]}
   end
 
   #
@@ -78,22 +65,6 @@ module RubyInstagramScraper
 
   def self.normalized_user_media_by_uid(id, count=DEFAULT_COUNT, end_cursor=nil)
     raise Exception.new("Endpoint /media is no longer working, don't use this function anymore")
-
-    data = self._get_media_user_by_id_proxy(id, count, end_cursor)
-    #data["data"]["user"]["edge_owner_to_timeline_media"]["edges"]
-    # puts "------------------- data --------------"
-    # pp data
-    # puts "---------------------------------------"
-    if data["data"]["user"]
-      result = RubyInstagramResponse.new(
-        :media => self.flatten_media_edge_array(data["data"]["user"]["edge_owner_to_timeline_media"]["edges"]), 
-        :page => data["data"]["user"]["edge_owner_to_timeline_media"]["page_info"], 
-        :raw => data )
-    else
-      result = RubyInstagramResponse.new(:deleted => true)
-    end
-    #pp result
-    result
   end
 
   def self.normalized_media_by_code(code)
@@ -107,6 +78,15 @@ module RubyInstagramScraper
       :raw => data)
     #pp result
     result
+  end
+
+  def self.normalized_likes_by_shortcode(shortcode)
+    raw = self._get_media_likes_by_shortcode(shortcode)
+    #pp raw
+    result = RubyInstagramResponse.new(
+      :media => self.add_virtual_fields(raw["data"]["shortcode_media"]),
+      :likes => raw["data"]["shortcode_media"]["edge_liked_by"]["edges"].map{|n| n["node"]},
+      :raw => raw)
   end
 
   private
@@ -128,6 +108,11 @@ module RubyInstagramScraper
     #self._march_2018_get_user_by_name(name)
     self._jun_2018_get_user_by_name(name)
   end
+
+  def self._get_media_likes_by_shortcode(shortcode)
+    self._jan_2019_get_media_likes(shortcode)
+  end
+
   #
   # Utilities
   #
@@ -172,6 +157,23 @@ module RubyInstagramScraper
     item
   end
 
+  def self.getDataBlobFromPage(page)
+    scripts = page.search("script")
+    found = ""
+    scripts.each do |script_tag|
+      tag_text = script_tag.text
+      if tag_text.include? "_sharedData" and tag_text.include? "locale"
+        found = tag_text[ tag_text.index("{"), (tag_text.rindex("}") - tag_text.index("{") + 1)  ]
+      end
+    end
+    found
+  end
+
+  def self.get_ig_gis(params, rhx_gis)
+    vals = rhx_gis + ":" + params.to_json
+    Digest::MD5.hexdigest vals
+  end
+
   #
   # code to rewrite every time tom catches jerry
   # https://stackoverflow.com/questions/49265339/instagram-a-1-url-doesnt-allow-max-id
@@ -188,15 +190,7 @@ module RubyInstagramScraper
     params = ""
     doc = Nokogiri::HTML(open( "#{url}#{params}", 'User-Agent' => USER_AGENT ) )
 
-    scripts = doc.search("script")
-    found = ""
-    scripts.each do |script_tag|
-      tag_text = script_tag.text
-      if tag_text.include? "_sharedData" and tag_text.include? "locale"
-        found = tag_text[ tag_text.index("{"), (tag_text.rindex("}") - tag_text.index("{") + 1)  ]
-      end
-    end
-    JSON.parse (found)
+    JSON.parse ( self.getDataBlobFromPage(doc) )
   end
 
   def self._march_2018_get_user_by_id(id, count=DEFAULT_COUNT, end_cursor=nil)
@@ -220,5 +214,17 @@ module RubyInstagramScraper
     JSON.parse( open( "#{url}#{params.to_json}", 'User-Agent' => USER_AGENT ).read )
   end
 
+  def self._jan_2019_get_media_likes(shortcode)
+    url = "#{BASE_URL}/graphql/query/?query_hash=e0f59e4a1c8d78d0161873bc2ee7ec44&variables="
+    #https://www.instagram.com/graphql/query/?query_hash=e0f59e4a1c8d78d0161873bc2ee7ec44&variables=%7B%22shortcode%22%3A%22BrMiUYWh-iU%22%2C%22include_reel%22%3Atrue%2C%22first%22%3A24%7D
+    params = {'shortcode'=> shortcode, 'include_reel' => true, 'first'=> 24 }
+    # Open the initial page to grab the cookie from it
+    p1 = open("https://www.instagram.com/p/#{shortcode}/", 'User-Agent' => USER_AGENT )
+    cookie = p1.meta['set-cookie']
+    doc = Nokogiri::HTML(p1)
+    json = JSON.parse ( self.getDataBlobFromPage(doc) )
+    rhx_gis = json["rhx_gis"]
+    JSON.parse( open( "#{url}#{params.to_json}", 'x-instagram-gis'=> self.get_ig_gis(params, rhx_gis), 'Cookie' => cookie, "x-requested-with" => "XMLHttpRequest", 'User-Agent' => USER_AGENT ).read )
+  end
 
 end
