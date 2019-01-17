@@ -87,8 +87,10 @@ describe RubyInstagramScraper do
 
   describe "when request normalized likes by code with count" do
     it "should have these fields" do
-      result = RubyInstagramScraper.normalized_likes_by_shortcode("BhG_n9jHS3F")
-      result.media["shortcode"].must_equal "BhG_n9jHS3F"
+      result = RubyInstagramScraper.normalized_likes_by_shortcode("BsmAA8ZhjiE")
+      result.media["shortcode"].must_equal "BsmAA8ZhjiE"
+      assert result.likes.count > 10
+      pp result.likes.count
     end
   end
 
